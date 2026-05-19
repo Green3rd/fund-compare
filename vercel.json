@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "SEC_API_BASE_URL": "https://api.sec.or.th/FundDailyInfo",
+    "CACHE_TTL_SEC_API": "1800",
+    "CACHE_TTL_YAHOO": "3600"
+  }
+}
