@@ -1,6 +1,6 @@
 import { HistoricalData } from "@/types/fund";
 
-function generateMockHistoricalData(fundCode: string, baseNav: number, days: number = 90): HistoricalData {
+function generateMockHistoricalData(fundCode: string, baseNav: number, days: number = 400): HistoricalData {
   const data = [];
   const today = new Date();
   

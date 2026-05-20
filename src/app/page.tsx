@@ -6,7 +6,9 @@ import FundSearch from "@/components/FundSearch";
 import FundChart from "@/components/FundChart";
 import ComparisonMetrics from "@/components/ComparisonMetrics";
 import DateRangeSelector from "@/components/DateRangeSelector";
+import ViewToggle from "@/components/ViewToggle";
 import { Fund } from "@/types/fund";
+import { calculatePerformanceMetrics } from "@/lib/performance-calculator";
 
 export default function Home() {
   const [selectedFunds, setSelectedFunds] = useState<Fund[]>([]);
@@ -14,6 +16,7 @@ export default function Home() {
   const [allChartData, setAllChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState(90);
+  const [isNormalized, setIsNormalized] = useState(false);
   const isLoadingFromUrl = useRef(false);
   const hasInitialized = useRef(false);
   const router = useRouter();
@@ -97,9 +100,12 @@ export default function Home() {
       )
     ).then((results) => {
       const allDates = new Set<string>();
-      results.forEach((result) => {
+      const historicalDataMap = new Map<string, any>();
+      
+      results.forEach((result, index) => {
         if (result.data && result.data.data) {
           result.data.data.forEach((item: any) => allDates.add(item.date));
+          historicalDataMap.set(selectedFunds[index].fundCode, result.data);
         }
       });
 
@@ -117,9 +123,20 @@ export default function Home() {
       });
 
       setAllChartData(fullChartData);
+
+      const fundsWithMetrics = selectedFunds.map((fund) => {
+        const historicalData = historicalDataMap.get(fund.fundCode);
+        if (historicalData) {
+          const performanceMetrics = calculatePerformanceMetrics(historicalData);
+          return { ...fund, performanceMetrics };
+        }
+        return fund;
+      });
+
+      setSelectedFunds(fundsWithMetrics);
       setLoading(false);
     });
-  }, [selectedFunds]);
+  }, [selectedFunds.map(f => f.fundCode).join(",")]);
 
   const chartData = useMemo(() => {
     if (allChartData.length === 0) return [];
@@ -171,10 +188,16 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">กราฟเปรียบเทียบ NAV</h2>
-                <DateRangeSelector
-                  selectedRange={dateRange}
-                  onRangeChange={setDateRange}
-                />
+                <div className="flex items-center gap-4">
+                  <DateRangeSelector
+                    selectedRange={dateRange}
+                    onRangeChange={setDateRange}
+                  />
+                  <ViewToggle
+                    isNormalized={isNormalized}
+                    onToggle={setIsNormalized}
+                  />
+                </div>
               </div>
               {loading ? (
                 <div className="flex items-center justify-center h-96">
@@ -184,6 +207,7 @@ export default function Home() {
                 <FundChart
                   data={chartData}
                   fundCodes={selectedFunds.map((f) => f.fundCode)}
+                  isNormalized={isNormalized}
                 />
               )}
             </div>

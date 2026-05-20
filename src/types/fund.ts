@@ -1,3 +1,11 @@
+export interface PerformanceMetrics {
+  oneMonthReturn: number | null;
+  threeMonthReturn: number | null;
+  sixMonthReturn: number | null;
+  oneYearReturn: number | null;
+  ytdReturn: number | null;
+}
+
 export interface Fund {
   fundCode: string;
   fundName: string;
@@ -5,6 +13,8 @@ export interface Fund {
   navDate: string;
   category: string;
   managementCompany: string;
+  dailyChange?: number | null;
+  performanceMetrics?: PerformanceMetrics;
 }
 
 export interface HistoricalData {
